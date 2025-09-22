@@ -24,11 +24,18 @@ pipeline {
         stage("CQA") {
             steps {
                 withSonarQubeEnv('mysonar') {
-                    sh '''mvn clean verify sonar:sonar \
+                    sh '''${scannerHome}/bin/sonar-scanner \
                         -Dsonar.projectKey=tetris \
                         -Dsonar.projectName='tetris' \
                         -Dsonar.login=sqa_936b85ea3339f7291b319e29d2cafa71d7aac990
                     '''
+                }
+            }
+        }
+        stage("Quality Gates") {
+            steps {
+                script{
+                     waitForQualityGate abortPipeline: false, credentialsId: 'mysonar'
                 }
             }
         }
