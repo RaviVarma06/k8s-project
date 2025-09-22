@@ -4,7 +4,7 @@ pipeline {
         jdk 'jdk17'
         nodejs 'node16'
     }
-    environment {
+    environment { 
         SCANNER_HOME = tool 'mysonar'
         AWS_REGION = 'us-east-1'
         TETRIS_APP = '585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app'
