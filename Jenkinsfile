@@ -24,9 +24,9 @@ pipeline {
         stage("CQA") {
             steps {
                 withSonarQubeEnv('mysonar') {
-                    sh '''/opt/sonar-scanner/bin/sonar-scanner \
+                    sh '''$SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectKey=tetris \
-                        -Dsonar.projectName='tetris' \
+                        -Dsonar.projectName=tetris \
                         -Dsonar.login=sqa_936b85ea3339f7291b319e29d2cafa71d7aac990
                     '''
                 }
