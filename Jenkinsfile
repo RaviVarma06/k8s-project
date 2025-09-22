@@ -25,9 +25,9 @@ pipeline {
             steps {
                 withSonarQubeEnv('mysonar') {
                     sh '''mvn clean verify sonar:sonar \
-                        -Dsonar.projectKey=mytetris_app \
-                        -Dsonar.projectName='mytetris_app' \
-                        -Dsonar.login=sqa_238d74f0b897f183ce0dadb824acddc2d54fe27b
+                        -Dsonar.projectKey=tetris \
+                        -Dsonar.projectName='tetris' \
+                        -Dsonar.login=sqa_936b85ea3339f7291b319e29d2cafa71d7aac990
                     '''
                 }
             }
@@ -35,14 +35,14 @@ pipeline {
         stage("Build") {
             steps {
                 sh 'mvn clean package'
-                sh 'cp -r target mytetris_app'
+                sh 'cp -r target tetris'
             }
         }
         stage("Docker Build") {
             steps {
                 script {
-                    sh "docker build -t mygame/game ."
-                    sh "docker tag mygame/game $TETRIS_APP"
+                    sh "docker build -t mygame/tetris ."
+                    sh "docker tag mygame/tetris $TETRIS_APP"
                 }
             }
         }
