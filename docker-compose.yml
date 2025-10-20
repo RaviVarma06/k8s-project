@@ -1,0 +1,8 @@
+version: '3.8'
+services:
+  tetris-app:
+    image: 585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app:latest
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
