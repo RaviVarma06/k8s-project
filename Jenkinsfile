@@ -35,8 +35,7 @@ pipeline {
         
         stage("Build") {
             steps {
-                sh 'mvn clean package'
-                sh 'cp -r target tetris'
+                sh 'npm install'
             }
         }
         stage("Docker Build") {
