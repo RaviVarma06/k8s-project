@@ -41,7 +41,7 @@ pipeline {
         stage("Docker Build") {
             steps {
                 script {
-                    sh "docker build -t mygame/tetris ."
+                    sh "docker build -t mygame/tetris:v2 Tetris-V2"
                     sh "docker tag mygame/tetris $TETRIS_APP"
                 }
             }
