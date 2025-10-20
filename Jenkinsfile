@@ -1,4 +1,4 @@
-pipeline { 
+pipeline {
     agent any 
     tools {
         jdk 'jdk17'
@@ -7,7 +7,8 @@ pipeline {
     environment { 
         SCANNER_HOME = tool 'mysonar'
         AWS_REGION = 'us-east-1'
-        TETRIS_APP = '585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app'
+        IMAGE_TAG = 'v2'
+        TETRIS_APP = "585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app:${IMAGE_TAG}"
         ECR_REPO = '585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app'
     }
     stages {
@@ -32,7 +33,6 @@ pipeline {
                 }
             }
         }
-        
         stage("Build") {
             steps {
                 sh 'npm install'
@@ -41,8 +41,8 @@ pipeline {
         stage("Docker Build") {
             steps {
                 script {
-                    sh "docker build -t mygame/tetris:v2 Tetris-V2"
-                    sh "docker tag mygame/tetris $TETRIS_APP"
+                    sh "docker build -t mygame/tetris:${IMAGE_TAG} Tetris-V2"
+                    sh "docker tag mygame/tetris:${IMAGE_TAG} $TETRIS_APP"
                 }
             }
         }
@@ -53,6 +53,11 @@ pipeline {
                         export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                         export AWS_DEFAULT_REGION=$AWS_REGION
+
+                        # Create repo if it doesn't exist
+                        aws ecr describe-repositories --repository-names mytetris/app || \
+                        aws ecr create-repository --repository-name mytetris/app --region $AWS_REGION
+
                         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
                         docker push $TETRIS_APP
                     '''
@@ -65,9 +70,22 @@ pipeline {
                 sh "trivy image $TETRIS_APP"
             }
         }
-        stage("Deploy to container") {
+        stage("Deploy to AWS ECS") {
             steps {
-                sh 'docker-compose up -d'
+                withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CREDS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh '''
+                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                        export AWS_DEFAULT_REGION=$AWS_REGION
+
+                        # Trigger ECS deployment
+                        aws ecs update-service \
+                            --cluster my-cluster-name \
+                            --service my-service-name \
+                            --force-new-deployment \
+                            --region $AWS_REGION
+                    '''
+                }
             }
         }
     }
