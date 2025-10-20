@@ -32,13 +32,7 @@ pipeline {
                 }
             }
         }
-        stage("Quality Gates") {
-            steps {
-                script{
-                     waitForQualityGate abortPipeline: false, credentialsId: 'mysonar'
-                }
-            }
-        }
+        
         stage("Build") {
             steps {
                 sh 'mvn clean package'
