@@ -7,7 +7,7 @@ pipeline {
     environment { 
         SCANNER_HOME = tool 'mysonar'
         AWS_REGION = 'ap-south-1'
-        IMAGE_TAG = 'v2'
+        IMAGE_TAG = 'v1'
         TETRIS_APP = "585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app:${IMAGE_TAG}"
         ECR_REPO = '585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app'
     }
@@ -41,7 +41,7 @@ pipeline {
         stage("Docker Build") {
             steps {
                 script {
-                    sh "docker build -t mygame/tetris:${IMAGE_TAG} Tetris-V2"
+                    sh "docker build -t mygame/tetris:${IMAGE_TAG} ."
                     sh "docker tag mygame/tetris:${IMAGE_TAG} $TETRIS_APP"
                 }
             }
