@@ -30,7 +30,7 @@ pipeline {
         stage("Determine Version from svc.yaml") {
             steps {
                 script {
-                    def selectorLine = sh(script: "grep 'app:' argo-cd/svc.yaml | head -1", returnStdout: true).trim()
+                    def selectorLine = sh(script: "grep 'app:' argo-cd/svc.yml | head -1", returnStdout: true).trim()
                     def appLabel = selectorLine.split(':')[1].trim()
                     def version = appLabel == 'swiggy-v2' ? 'v2' : 'v1'
                     env.IMAGE_TAG = version
