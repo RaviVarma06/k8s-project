@@ -22,7 +22,7 @@ pipeline {
 
                     // Clone Argo CD repo into subfolder
                     dir('argo-cd') {
-                        git url: 'https://github.com/RaviVarma06/argo-cd.git', branch: 'master'
+                        git url: 'https://github.com/RaviVarma06/argo-cd.git', branch: 'main'
                     }
                 }
             }
