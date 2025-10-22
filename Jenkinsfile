@@ -1,25 +1,42 @@
 pipeline {
-    agent any 
+    agent any
     tools {
         jdk 'jdk17'
         nodejs 'node16'
     }
-    environment { 
+    environment {
         SCANNER_HOME = tool 'mysonar'
         AWS_REGION = 'ap-south-1'
-        IMAGE_TAG = 'v1'
-        TETRIS_APP = "585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app:${IMAGE_TAG}"
-        ECR_REPO = '585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app'
     }
     stages {
-        stage("CleanWs") {
+        stage("Clean Workspace") {
             steps {
                 cleanWs()
             }
         }
-        stage("Code") {
+        stage("Clone Repositories") {
             steps {
-                git "https://github.com/RaviVarma06/k8s-project.git"
+                script {
+                    // Clone application repo
+                    git url: 'https://github.com/RaviVarma06/k8s-project.git', branch: 'master'
+
+                    // Clone Argo CD repo into subfolder
+                    dir('argo-cd') {
+                        git url: 'https://github.com/RaviVarma06/argo-cd.git', branch: 'master'
+                    }
+                }
+            }
+        }
+        stage("Determine Version from svc.yaml") {
+            steps {
+                script {
+                    def selectorLine = sh(script: "grep 'app:' argo-cd/svc.yaml | head -1", returnStdout: true).trim()
+                    def appLabel = selectorLine.split(':')[1].trim()
+                    def version = appLabel == 'swiggy-v2' ? 'v2' : 'v1'
+                    env.IMAGE_TAG = version
+                    env.TETRIS_APP = "585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app:${version}"
+                    env.ECR_REPO = "585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app"
+                }
             }
         }
         stage("CQA") {
@@ -28,8 +45,7 @@ pipeline {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectKey=tetris \
                         -Dsonar.projectName=tetris \
-                        -Dsonar.login=sqa_e21535590f30ae302e122fecaf582e6c007fe355
-                    '''
+                        -Dsonar.login=sqa_e21535590f30ae302e122fecaf582e6c007fe355'''
                 }
             }
         }
@@ -41,30 +57,29 @@ pipeline {
         stage("Docker Build") {
             steps {
                 script {
-                    sh "docker build -t mygame/tetris:${IMAGE_TAG} ."
-                    sh "docker tag mygame/tetris:${IMAGE_TAG} $TETRIS_APP"
+                    def buildContext = env.IMAGE_TAG == 'v2' ? 'TETRIS-V2' : '.'
+                    sh "docker build -t mygame/tetris:${env.IMAGE_TAG} ${buildContext}"
+                    sh "docker tag mygame/tetris:${env.IMAGE_TAG} $TETRIS_APP"
                 }
             }
         }
         stage("Push to ECR") {
-    steps {
-        withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CREDS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-            sh '''
-                export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                export AWS_DEFAULT_REGION=$AWS_REGION
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CREDS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                    sh '''
+                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                        export AWS_DEFAULT_REGION=$AWS_REGION
 
-                # Create repo if it doesn't exist
-                aws ecr describe-repositories --repository-names mytetris/app || \
-                aws ecr create-repository --repository-name mytetris/app --region $AWS_REGION
+                        aws ecr describe-repositories --repository-names mytetris/app || \
+                        aws ecr create-repository --repository-name mytetris/app --region $AWS_REGION
 
-                # Login and push image
-                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-                docker push $TETRIS_APP
-            '''
+                        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+                        docker push $TETRIS_APP
+                    '''
+                }
+            }
         }
-    }
-}
         stage("TrivyScan") {
             steps {
                 sh 'trivy fs . > trivyfs.txt'
@@ -79,7 +94,6 @@ pipeline {
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                         export AWS_DEFAULT_REGION=$AWS_REGION
 
-                        # Trigger ECS deployment
                         aws ecs update-service \
                             --cluster my-cluster-name \
                             --service my-service-name \
