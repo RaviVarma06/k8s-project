@@ -47,23 +47,24 @@ pipeline {
             }
         }
         stage("Push to ECR") {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CREDS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
-                    sh '''
-                        export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
-                        export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
-                        export AWS_DEFAULT_REGION=$AWS_REGION
+    steps {
+        withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CREDS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+            sh '''
+                export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+                export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
+                export AWS_DEFAULT_REGION=$AWS_REGION
 
-                        # Create repo if it doesn't exist
-                        aws ecr describe-repositories --repository-names mytetris/app || \
-                        aws ecr create-repository --repository-name mytetris/app --region $AWS_REGION
+                # Create repo if it doesn't exist
+                aws ecr describe-repositories --repository-names mytetris/app || \
+                aws ecr create-repository --repository-name mytetris/app --region $AWS_REGION
 
-                        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
-                        docker push $TETRIS_APP
-                    '''
-                }
-            }
+                # Login and push image
+                aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REPO
+                docker push $TETRIS_APP
+            '''
         }
+    }
+}
         stage("TrivyScan") {
             steps {
                 sh 'trivy fs . > trivyfs.txt'
