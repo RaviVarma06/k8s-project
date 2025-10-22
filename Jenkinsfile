@@ -6,10 +6,10 @@ pipeline {
     }
     environment { 
         SCANNER_HOME = tool 'mysonar'
-        AWS_REGION = 'us-east-1'
+        AWS_REGION = 'ap-south-1'
         IMAGE_TAG = 'v2'
-        TETRIS_APP = "585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app:${IMAGE_TAG}"
-        ECR_REPO = '585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app'
+        TETRIS_APP = "585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app:${IMAGE_TAG}"
+        ECR_REPO = '585768179486.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app'
     }
     stages {
         stage("CleanWs") {
