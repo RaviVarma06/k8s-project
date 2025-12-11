@@ -45,7 +45,8 @@ pipeline {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectKey=tetris \
                         -Dsonar.projectName=tetris \
-                        -Dsonar.login=sqa_e21535590f30ae302e122fecaf582e6c007fe355'''
+                        -Dsonar.login=sqa_c9f1788017dc113a7a392d9cab81b2068d1d48ac
+                    '''
                 }
             }
         }
@@ -65,7 +66,7 @@ pipeline {
         }
         stage("Push to ECR") {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CREDS', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
+                withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CRED', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh '''
                         export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
