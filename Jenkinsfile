@@ -34,8 +34,8 @@ pipeline {
                     def appLabel = selectorLine.split(':')[1].trim()
                     def version = appLabel == 'swiggy-v2' ? 'v2' : 'v1'
                     env.IMAGE_TAG = version
-                    env.TETRIS_APP = "585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app:${version}"
-                    env.ECR_REPO = "585768179486.dkr.ecr.us-east-1.amazonaws.com/mytetris/app"
+                    env.TETRIS_APP = "904923506382.dkr.ecr.us-east-1.amazonaws.com/mytetris/app:${version}"
+                    env.ECR_REPO = "904923506382.dkr.ecr.us-east-1.amazonaws.com/mytetris/app"
                 }
             }
         }
