@@ -7,6 +7,7 @@ pipeline {
     environment { 
         SCANNER_HOME = tool 'mysonar' 
         AWS_REGION = 'ap-south-1'
+        ACCOUNT_ID = '904923506382'
         IMAGE_TAG = 'v1'
         TETRIS_APP = "904923506382.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app:${IMAGE_TAG}"
         ECR_REPO = '904923506382.dkr.ecr.ap-south-1.amazonaws.com/mytetris/app'
@@ -79,7 +80,7 @@ pipeline {
                         export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                         export AWS_DEFAULT_REGION=$AWS_REGION
-                        docker push mygame/tetris:${IMAGE_TAG}
+                        docker push ${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPO}:${IMAGE_TAG}
                     '''
                 }
             }
