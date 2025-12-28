@@ -72,20 +72,14 @@ pipeline {
             }
         }
        
-        stage("Deploy to AWS ECS") {
+        stage("Deploy to AWS EKS") {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'AWS-ECR-CRED', usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY')]) {
                     sh '''
                         export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
                         export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
                         export AWS_DEFAULT_REGION=$AWS_REGION
-
-                        # Trigger ECS deployment
-                        aws ecs update-service \
-                            --cluster my-cluster-name \
-                            --service my-service-name \
-                            --force-new-deployment \
-                            --region $AWS_REGION
+                        sh 'docker push mygame/tetris:${IMAGE_TAG}'
                     '''
                 }
             }
