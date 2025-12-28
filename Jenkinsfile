@@ -28,7 +28,7 @@ pipeline {
                     sh '''$SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectKey=tetris \
                         -Dsonar.projectName=tetris \
-                        -Dsonar.login=sqa_e21535590f30ae302e122fecaf582e6c007fe355
+                        -Dsonar.login=sqa_6b3358daad601391683c983526a57cce0b8d4a91
                     '''
                 }
             }
